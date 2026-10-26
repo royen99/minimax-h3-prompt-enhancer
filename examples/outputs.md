@@ -26,6 +26,13 @@ overall_soundscape: Sizzling pans, clinking cutlery, and the chef's knife scrapi
 non_diegetic_music: A steady acoustic guitar pattern with light brushed snare, gradually increasing in volume and fading out at the end.
 ```
 
+Generated video with Minimax LLM:
+
+
+https://github.com/user-attachments/assets/ad00564b-919b-4131-aa1a-2a2ca54d6e34
+
+
+
 ## 03-t2va-dialogue-multishot
 
 Input: `a girl and her grandfather fish from a pier; she says "I got one!" and he laughs and says "Careful, hold on tight." 12 seconds`
