@@ -58,7 +58,11 @@ non_diegetic_music: A soft acoustic guitar pattern with light fingerpicking, fad
 
 Generated video with Minimax LLM:
 
-![generated video](images/08-counts.mp4)
+
+
+https://github.com/user-attachments/assets/333d2cfd-507a-4ca1-baad-d73cf17d54f9
+
+
 
 ## 05-i2va-sign
 
@@ -79,13 +83,15 @@ non_diegetic_music: A single warm acoustic guitar note with a soft, sustained re
 ```
 
 Generated video with Minimax LLM:
-![generated video](images/12-visible-text-caption.mp4)
+
+
+https://github.com/user-attachments/assets/cc42a1c0-652c-4c7a-95c0-d28f8f89d5dd
+
+
 
 ## 06-l2va-cats
 
 Reference image (last frame):
-
-![cats](images/08-counts.png)
 
 Input: `ending frame of the video: the cats are all asleep, the earlier part shows them settling down. 6 seconds`
 
@@ -98,6 +104,14 @@ overall_soundscape: Gentle sunlight filters through the curtains. A faint purr f
 
 non_diegetic_music: A soft acoustic guitar pattern with sparse piano notes, fading out at the end.
 ```
+
+Generated video with Minimax LLM:
+
+
+
+https://github.com/user-attachments/assets/052cdc7a-c412-4676-b142-eba43e35957d
+
+
 
 ## Known issues seen in testing
 
