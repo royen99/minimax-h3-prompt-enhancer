@@ -2,7 +2,7 @@
 license: apache-2.0
 base_model: huihui-ai/Huihui-Qwen3-VL-8B-Instruct-abliterated
 pipeline_tag: image-text-to-text
-tags: [prompt-enhancer, text-to-video, image-to-video, minimax-h3, ollama, qwen3-vl]
+tags: [prompt-enhancer, text-to-video, image-to-video, reference-to-video, minimax-h3, ollama, qwen3-vl]
 ---
 
 # MiniMax H3 Prompt Enhancer
@@ -12,6 +12,13 @@ An [Ollama](https://ollama.com) model that turns a short idea, and optionally a 
 H3 generates video together with sound, so a good prompt describes both what is seen and what is heard. This model writes prompts in the structure from MiniMax's official [video prompt writing guide](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_base_en.md): a timeline of shots with camera moves, speaker IDs and dialogue, a soundscape, and background music.
 
 It is a prompt and parameter layer on top of an existing vision model. It contains no new weights and no MiniMax code or weights.
+
+There are two variants, built from two Modelfiles:
+
+| Model | Modelfile | Use it for |
+|-------|-----------|------------|
+| `minimax-prompt-enhancer` | `Modelfile` | Text to video, image to video, first and last frame |
+| `minimax-prompt-enhancer-ref` | `Modelfile.ref` | Reference to video: images are references, not frames ([jump to it](#reference-to-video-modelfileref)) |
 
 ## What it does
 
@@ -53,9 +60,10 @@ See [examples/outputs.md](examples/outputs.md) for real outputs.
 git clone https://github.com/royen99/minimax-h3-prompt-enhancer
 cd minimax-h3-prompt-enhancer
 ollama create minimax-prompt-enhancer -f Modelfile
+ollama create minimax-prompt-enhancer-ref -f Modelfile.ref
 ```
 
-Re-run the same command after editing the `Modelfile`; unchanged layers are reused.
+Build only the one you need. Re-run the same command after editing a Modelfile; unchanged layers are reused.
 
 ## Usage
 
@@ -108,9 +116,62 @@ Paste the result into MiniMax H3 as the prompt, and attach the same image(s) as 
 
 Use the `comfyui-ollama` node with the model name `minimax-prompt-enhancer`. For image-to-video, connect the same image to the node and to the H3 reference input.
 
+## Reference-to-video (`Modelfile.ref`)
+
+In H3's reference-to-video mode, an image is only a **reference**: it supplies a character, a place, an object, or a style for the new video, and it is not automatically the first frame. This needs a different prompt format, so it has its own model, built from `Modelfile.ref` and based on MiniMax's [reference-mode guide](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md).
+
+```bash
+ollama create minimax-prompt-enhancer-ref -f Modelfile.ref
+```
+
+### What it writes
+
+Six sections, in this order:
+
+| Section | Content |
+|---------|---------|
+| `subject_definitions` | One line per reusable item (`<Subject 1>`, `<Subject 2>` ...) saying which image it comes from and which features to follow. A frame anchor is written as `<Picture 1> is the first frame of [Shot 1], showing ...` |
+| `summary` | A short paragraph that starts with a task type: `[reference generation]` (default) or `[keyframe completion]`, or both joined with `+` |
+| `retention_analysis` | One line per label with how it is kept: `fully_preserved`, `partially_preserved`, `attribute_transfer` or `weak_reference` |
+| `detailed_description` | The shot-by-shot timeline, with the labels inserted where they apply. Same shot, camera, speech and sound rules as the main model |
+| `overall_soundscape` | Ambience and physical sounds |
+| `non_diegetic_music` | Audience-only background music |
+
+### Usage
+
+Attach one or more images and say what each is for. The images are numbered in the order you give them. If you do not say, the model decides from the picture (a person is a character, a place is a scene). The default duration is 10 seconds.
+
+**One image as a character**
+
+```bash
+ollama run minimax-prompt-enhancer-ref "use the image as the character. She walks through a rainy night market and says \"Almost home.\" 8 seconds ./woman.png"
+```
+
+**Two images: a character and a location**
+
+```bash
+ollama run minimax-prompt-enhancer-ref "image 1 is the character, image 2 is the location. He climbs the spiral stairs and looks out over the sea. 10 seconds ./man.png ./lighthouse.png"
+```
+
+**An image as the first frame** (together with the reference format)
+
+```bash
+ollama run minimax-prompt-enhancer-ref "image 1 is the first frame; the baker unlocks the door and says \"Fresh bread in ten minutes.\" 6 seconds ./bakery.png"
+```
+
+Paste the result into MiniMax H3's reference-to-video prompt, and attach the same images in the same order, so that `<Picture 1>` and `<Picture 2>` match.
+
+### Limits of the reference model
+
+- **Images only.** Ollama cannot attach video or audio, so reference videos and reference audio (`<Video N>` and `<Audio N>`, and the audio retention markers) are not supported. Edit and continuation tasks that need a source video are out of scope.
+- `detailed_description` is often shorter than the 350 to 500 words the guide recommends (typically 200 to 280 words). Ask for more detail, or extend it by hand.
+- A person in a reference image is sometimes described without an age or ethnicity.
+- A silent character occasionally gets a speaker ID such as `(S1)`. Remove it when nobody speaks, because IDs belong only to people who have a `<d>` dialogue block.
+- Section names are sometimes followed by a blank line, and there can be extra blank lines between sections. They are harmless.
+
 ## Settings
 
-Defined in the [Modelfile](Modelfile):
+Defined in the [Modelfile](Modelfile) and, with the same values, in [Modelfile.ref](Modelfile.ref):
 
 | Parameter | Value | Why |
 |-----------|-------|-----|
@@ -127,6 +188,7 @@ The base model must be the `-instruct` variant. The default `qwen3-vl-abliterate
 
 ```text
 Modelfile             system prompt, parameters, few-shot examples
+Modelfile.ref         reference-to-video variant (six-section format)
 examples/
   inputs.jsonl        test prompts with what to check
   outputs.md          real model outputs
@@ -152,6 +214,7 @@ The default base model, `huihui_ai/qwen3-vl-abliterated:8b-instruct`, is a Qwen3
 ## Credits
 
 - Prompt structure, field definitions and camera vocabulary: the [MiniMax H3 video prompt writing guide](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_base_en.md) by MiniMax.
+- Reference-to-video format (`Modelfile.ref`): the [MiniMax H3 full-reference mode guide](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md) by MiniMax.
 - Base model: [huihui_ai/qwen3-vl-abliterated](https://ollama.com/huihui_ai/qwen3-vl-abliterated), derived from [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL).
 
 This project is not affiliated with MiniMax or Alibaba. It does not include or redistribute any MiniMax model, code, or documentation. It only encodes the structure the guide describes into a system prompt, with its own wording and examples.

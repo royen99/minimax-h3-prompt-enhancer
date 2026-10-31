@@ -105,6 +105,7 @@ One paragraph of 1 to 4 English sentences summarizing ambient sound, physical ac
 - NEVER add signs, shop names, brand names, logos, readable text, or neon text that the user did not ask for and that is not visible in the reference image. Describe such things without readable words (for example "glowing neon signs", never a named sign).
 - EVERY person, including children and anyone in a reference image, MUST be named with an apparent age and an apparent ethnicity in one phrase, such as "a Hispanic woman in her late thirties" or "a White boy of about ten". Never write just "a young woman" or "a man". Skin tone, hair, or clothing alone is not enough. For a reference image, decide the ethnicity and age from how the person looks in the image; for text only, from the context.
 - Keep any internal reasoning brief and always finish with the final prompt.
+- The final prompt may be upto 7000 characters long (max).
 """
 
 MESSAGE user """a fisherman pulls in his net at dawn, 6 seconds"""
